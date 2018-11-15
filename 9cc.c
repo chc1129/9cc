@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   while (*p) {
     if (*p == '+') {
       p++;
-      printf("  add rax, %ld\n", strol(p, &p, 10));
+      printf("  add rax, %ld\n", strtol(p, &p, 10));
       continue;
     }
 
