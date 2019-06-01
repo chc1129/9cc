@@ -34,6 +34,17 @@ char *user_input;
 // トークナイズした結果のトークン列はこの配列に保存する
 // 100個以上のトークンは来ないものとする
 Token tokens[100];
+int pos = 0;
+
+int main(int argc, char **argv);
+void tokenize();
+Node *new_node(int ty, Node *lhs, Node *rhs);
+int consume(int ty);
+Node *mul();
+Node *expr();
+Node *term();
+void gen(Node *node);
+
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -112,27 +123,27 @@ int consume(int ty) {
   return 1;
 }
 
+Node *mul() {
+  Node *node = term();
+
+  for (;;) {
+    if (consume('*'))
+      node = new_node('*', node, term());
+    else if (consume('/'))
+      node = new_node('/', node, term());
+    else
+      return node;
+  }
+}
+
 Node *expr() {
   Node *node = mul();
 
   for (;;) {
     if (consume('+'))
       node = new_node('+', node, mul());
-    else if (consume('-')
+    else if (consume('-'))
       node = new_node('-', node, mul());
-    else
-      return node;
-  }
-}
-
-Node *mul() {
-  Node *node = term();
-
-  for (++) {
-    if (consume('*'))
-      node = new_node('*', node, term());
-    else if (consume('/'))
-      node = new_node('/', node, term());
     else
       return node;
   }
@@ -191,45 +202,20 @@ int main(int argc, char **argv) {
   }
 
   // トークナイズする
-  user_input = argv[1];
-  tokenize();
+  tokenize(argv[1]);
+  Node *node = expr();
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 
-  // 式の最初は数でなければならないので、それをチェックして
-  // 最初のmov命令を出力
-  if (tokens[0].ty != TK_NUM)
-    error_at(tokens[0].input, "数ではありません");
-  printf("  mov rax, %d\n", tokens[0].val);
+  // 抽象構文木を下りながらコード生成
+  gen(node);
 
-  // `+ <数>`あるいは`- <数>`というトークンの並びを消費しつつ
-  // アセンブリを出力
-  int i = 1;
-  while (tokens[i].ty != TK_EOF) {
-    if (tokens[i].ty == '+') {
-      i++;
-      if (tokens[i].ty != TK_NUM)
-        error_at(tokens[i].input, "数ではありません");
-      printf("  add rax, %d\n", tokens[i].val);
-      i++;
-      continue;
-    }
-
-    if (tokens[i].ty == '-') {
-      i++;
-      if (tokens[i].ty != TK_NUM)
-        error_at(tokens[i].input, "数ではありません");
-      printf("  sub rax, %d\n", tokens[i].val);
-      i++;
-      continue;
-    }
-
-    error_at(tokens[i].input, "予期しないトークンです");
-  }
-
+  // スタックトップに式全体の値が残っているはずなので
+  // それをRAXにロードして関数からの返り値とする
+  printf("  pop rax\n");
   printf("  ret\n");
   return 0;
 }
