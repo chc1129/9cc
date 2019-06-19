@@ -10,16 +10,16 @@ enum {
   TK_EOF,       // 入力の終わりを表すトークン
 };
 
-enum {
-  ND_NUM = 256, // 整数のノードの型
-};
-
 // トークンの型
 typedef struct {
   int ty;       // トークンの型
   int val;      // tyがTK_NUMの場合,その数値
   char *input;  // トークン文字列(エラーメッセージ用)
 } Token;
+
+enum {
+  ND_NUM = 256, // 整数のノードの型
+};
 
 typedef struct Node {
   int ty;            // 演算子かND_NUM
@@ -37,7 +37,7 @@ Token tokens[100];
 int pos = 0;
 
 int main(int argc, char **argv);
-void tokenize();
+void tokenize(char *p);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 int consume(int ty);
 Node *mul();
@@ -67,9 +67,7 @@ void error_at(char *loc, char *msg) {
 
 // user_inputが指している文字列を
 // トークンに分割してtokensに保存する
-void tokenize() {
-  char *p = user_input;
-
+void tokenize(char *p) {
   int i = 0;
   while (*p) {
     // 空白文字をスキップ
