@@ -37,7 +37,7 @@ Token tokens[100];
 int pos = 0;
 
 int main(int argc, char **argv);
-void tokenize(char *p);
+void tokenize();
 Node *new_node(int ty, Node *lhs, Node *rhs);
 int consume(int ty);
 Node *mul();
@@ -67,7 +67,8 @@ void error_at(char *loc, char *msg) {
 
 // user_inputが指している文字列を
 // トークンに分割してtokensに保存する
-void tokenize(char *p) {
+void tokenize() {
+  char *p = user_input;
   int i = 0;
   while (*p) {
     // 空白文字をスキップ
@@ -76,7 +77,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -200,7 +201,8 @@ int main(int argc, char **argv) {
   }
 
   // トークナイズする
-  tokenize(argv[1]);
+  user_input = argv[1];
+  tokenize();
   Node *node = expr();
 
   // アセンブリの前半部分を出力
