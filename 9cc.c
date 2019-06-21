@@ -76,7 +76,7 @@ void tokenize(char *p) {
       continue;
     }
 
-    if (*p == '+' || *p == '-') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -186,7 +186,7 @@ void gen(Node *node) {
     printf("  imul rdi\n");
     break;
   case '/':
-    printf("  cpa\n");
+    printf("  cqo\n");
     printf("  idiv rdi\n");
   }
 
