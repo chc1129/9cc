@@ -36,15 +36,16 @@ char *user_input;
 Token tokens[100];
 int pos = 0;
 
-int main(int argc, char **argv);
 void tokenize();
 Node *new_node(int ty, Node *lhs, Node *rhs);
+Node *new_node_num(int val);
 int consume(int ty);
-Node *mul();
 Node *expr();
+Node *mul();
+Node *unary();
 Node *term();
 void gen(Node *node);
-
+int main(int argc, char **argv);
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -122,19 +123,6 @@ int consume(int ty) {
   return 1;
 }
 
-Node *mul() {
-  Node *node = term();
-
-  for (;;) {
-    if (consume('*'))
-      node = new_node('*', node, term());
-    else if (consume('/'))
-      node = new_node('/', node, term());
-    else
-      return node;
-  }
-}
-
 Node *expr() {
   Node *node = mul();
 
@@ -146,6 +134,27 @@ Node *expr() {
     else
       return node;
   }
+}
+
+Node *mul() {
+  Node *node = unary();
+
+  for (;;) {
+    if (consume('*'))
+      node = new_node('*', node, unary());
+    else if (consume('/'))
+      node = new_node('/', node, unary());
+    else
+      return node;
+  }
+}
+
+Node *unary() {
+  if (consume('+'))
+    return term();
+  if (consume('-'))
+    return new_node('-', new_node_num(0), term());
+  return term();
 }
 
 Node *term() {
