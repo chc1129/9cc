@@ -41,6 +41,9 @@ Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 int consume(int ty);
 Node *expr();
+Node *equality();
+Node *relational();
+Node *add();
 Node *mul();
 Node *unary();
 Node *term();
@@ -124,6 +127,40 @@ int consume(int ty) {
 }
 
 Node *expr() {
+  return equality();
+}
+
+Node *equality() {
+  Node *node = relational();
+
+  for (;;) {
+    if (consume('=='))
+      node = new_node('==', node, relational());
+    else if (consume('=='))
+      node = new_node('!=', node, relational());
+    else
+      return node;
+  }
+}
+
+Node *relational() {
+  Node *node = add();
+
+  for (;;) {
+    if (consume('<'))
+      node = new_node('<', node, add());
+    else if (consume('<='))
+      node = new_node('<=', node, add());
+    else if (consume('>'))
+      node = new_node('>', node, add());
+    else if (consume('>='))
+      node = new_node('>=', node, add());
+    else
+      return node;
+  }
+}
+
+Node *add() {
   Node *node = mul();
 
   for (;;) {
