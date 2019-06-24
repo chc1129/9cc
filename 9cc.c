@@ -28,6 +28,12 @@ typedef struct Node {
   int val;           // tyがND_NUMの場合のみ使う
 } Node;
 
+typedef struct {
+  void **data;
+  int capacity;
+  int len;
+} Vector;
+
 // 入力プログラム
 char *user_input;
 
@@ -39,6 +45,8 @@ int pos = 0;
 void tokenize();
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+Vector *new_vector();
+void vec_push(Vector *vec, void *elem);
 int consume(int ty);
 Node *expr();
 Node *equality();
@@ -48,6 +56,8 @@ Node *mul();
 Node *unary();
 Node *term();
 void gen(Node *node);
+void expect(int line, int expected, int actual);
+void runtest();
 int main(int argc, char **argv);
 
 // エラーを報告するための関数
@@ -124,6 +134,22 @@ int consume(int ty) {
     return 0;
   pos++;
   return 1;
+}
+
+Vector *new_vector() {
+  Vector *vec = malloc(sizeof(Vector));
+  vec->data = malloc(sizeof(void *) * 16);
+  vec->capacity = 16;
+  vec->len = 0;
+  return vec;
+}
+
+void vec_push(Vector *vec, void *elem) {
+  if (vec->capacity == vec->len) {
+    vec->capacity *= 2;
+    vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
+  }
+  vec->data[vec->len++] = elem;
 }
 
 Node *expr() {
@@ -240,7 +266,35 @@ void gen(Node *node) {
   printf("  push rax\n");
 }
 
+void expect(int line, int expected, int actual) {
+  if (expected == actual)
+    return;
+  fprintf(stderr, "%d: %d expected, but got %d\n",
+          line, expected, actual);
+  exit(1);
+}
+
+void runtest() {
+  Vector *vec = new_vector();
+  expect(__LINE__, 0, vec->len);
+
+  for (int i = 0; i < 100; i++)
+    vec_push(vec, (void *)i);
+
+  expect(__LINE__, 100, vec->len);
+  expect(__LINE__, 0, (long)vec->data[0]);
+  expect(__LINE__, 50, (long)vec->data[50]);
+  expect(__LINE__, 99, (long)vec->data[99]);
+
+  printf("OK\n");
+}
+
 int main(int argc, char **argv) {
+  if (strcmp(argv[1], "-test") == 0) {
+    runtest();
+    return 0;
+  }
+
   if (argc != 2) {
     error("引数の個数が正しくありません");
     return 1;
