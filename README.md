@@ -8,10 +8,12 @@ https://www.sigbus.info/compilerbook/
 
 ## Build
 9ccのbuildはmakeコマンドで実行できます。
-'make'
+
+`make`
 
 テストコードは9ccリポジトリに含まれています。
 テストコードを追加・修正したい場合は,test.shを編集してください。
 make testでテストコードが実行されます。
-'make test'
+
+`make test`
 
